@@ -1,0 +1,41 @@
+{
+  "name": "map-of-reddit",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "start": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "data": "cd data && http-server -p 8085 -c-1 --cors ."
+  },
+  "dependencies": {
+    "core-js": "^3.4.3",
+    "earcut": "^2.2.2",
+    "fuzzysort": "^1.1.4",
+    "ngraph.events": "^1.0.0",
+    "ngraph.forcelayout": "^2.0.0",
+    "ngraph.graph": "^19.1.0",
+    "query-state": "^4.3.0",
+    "rafor": "^1.0.2",
+    "rbush": "^3.0.1",
+    "rbush-knn": "^3.0.1",
+    "streaming-svg-parser": "^1.0.1",
+    "vue": "^2.6.11",
+    "vuereddit": "^0.8.0",
+    "w-gl": "^0.16.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.1.0",
+    "@vue/cli-plugin-eslint": "^4.1.0",
+    "@vue/cli-service": "^4.1.0",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^5.16.0",
+    "eslint-config-mourner": "^3.0.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "stylus": "^0.54.7",
+    "stylus-loader": "^3.0.2",
+    "vue-template-compiler": "^2.6.10",
+    "worker-loader": "^2.0.0"
+  }
+}
