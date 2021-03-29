@@ -1,6 +1,8 @@
 # Map of reddit
 
-This code renders a [map of reddit](http://anvaka.github.io/map-of-reddit/).
+This code renders a [map of reddit](http://anvaka.github.io/map-of-reddit/). Each dot on the map
+is subreddit. Two dots within the same cluster are usually close to each other if multiple 
+users frequently leave comments on both subreddits.
 
 [![map of reddit](https://i.imgur.com/bG3BB51.png)](http://anvaka.github.io/map-of-reddit/)
 
