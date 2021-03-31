@@ -8,7 +8,7 @@ users frequently leave comments on both subreddits.
 
 ## How is it made?
 
-I processed `176,178,986` comments that redditors left in years 2020 - 2021 and computed
+I processed `176,178,986` unique comments that redditors left in years 2020 - 2021 and computed
 Jaccard Similarity between subreddits. 
 
 Then I treated relationships between subreddits as  a graph clustering problem. Once clusters
@@ -31,10 +31,10 @@ on [twitter](https://twitter.com/anvaka).
 each other on multiple dimensions. Please don't treat proximity of some countries or even subreddits
 within the same country as a strong proof of relationship - they could be just an artifact of my 
 clustering/layout algorithm.
-* It was very hard to develop the website, as frequently I got side-tracked by all the amazing content
+* It was very hard to develop the website as frequently I got side-tracked by all the amazing content
 people produce on reddit.
 * The algorithm decided to group multi-millionaire subreddits in one cluster. One possible way to 
-de-noise such clusters is to click on "Show Related" from the sidebar. This give focused view on the
+de-noise such cluster is to click on "Show Related" from the sidebar. This gives focused view on the
 first and second degree connections.
 
 ## Running code locally
