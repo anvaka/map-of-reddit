@@ -1,11 +1,12 @@
-import { defineProgram, InstancedAttribute, GLCollection } from 'w-gl';
+import { defineProgram, ColorAttribute, InstancedAttribute, GLCollection } from 'w-gl';
 
-export default class MSDFTextCollection extends GLCollection {
+export default class ColoredTextCollection extends GLCollection {
   constructor(gl, options = {}) {
     gl.getExtension('OES_standard_derivatives');
 
     super(getTextProgram(gl, options));
 
+    // TODO: this duplicates MSDFTextCollection. DRY it.
     let img = (this.msdfImage = new Image());
     img.crossOrigin = 'Anonymous';
     this.isReady = false;
@@ -47,28 +48,13 @@ export default class MSDFTextCollection extends GLCollection {
     if (!this.uniforms) {
       this.uniforms = {
         modelViewProjection: this.modelViewProjection,
-        color: [0.9, 0.9, 0.9, 1.0],
         bias: 0.5,
         opacity: this.opacity
       };
     }
-
-    this.uniforms.cameraDistance = drawContext.view.position[2];
     this.uniforms.opacity = this.opacity;
+    this.uniforms.cameraDistance = drawContext.view.position[2];
 
-    // This draws text outline
-    this.uniforms.color[0] = 0.2;
-    this.uniforms.color[1] = 0.4;
-    this.uniforms.color[2] = 0.8;
-    this.uniforms.color[3] = 0.8;
-    this.uniforms.bias = 0.35;
-    this.program.draw(this.uniforms);
-
-    // This draws text itself
-    this.uniforms.color[0] = 0.9;
-    this.uniforms.color[1] = 0.9;
-    this.uniforms.color[2] = 0.9;
-    this.uniforms.color[3] = 1;
     this.uniforms.bias = 0.5;
     this.program.draw(this.uniforms);
   }
@@ -118,10 +104,11 @@ export default class MSDFTextCollection extends GLCollection {
 
       this.add({
         position: [x + dx, y - sdfPos.yoffset * scale, z],
+        color: textInfo.color,
         charSize: [
           (fontSize * sdfPos.width) / 42,
           (-fontSize * sdfPos.height) / 42,
-          fontSize,
+          fontSize
         ],
         texturePosition: [
           sdfPos.x / this.sdfTextureWidth,
@@ -144,8 +131,9 @@ function getTextProgram(gl, options) {
     gl,
     vertex: `
   uniform mat4 modelViewProjection;
-  uniform vec4 color;
   uniform float cameraDistance;
+
+  attribute vec4 color;
 
   // Position of the text character:
   attribute vec3 position;
@@ -155,14 +143,15 @@ function getTextProgram(gl, options) {
   // [x, y, w, h] - of the character in the msdf texture;
   attribute vec4 texturePosition;
 
-  varying vec4 vColor;
   varying vec2 vPoint;
+  varying vec4 vColor;
 
   void main() {
-    gl_Position = modelViewProjection * vec4(position + vec3(vec2(point.x, point.y) * charSize.xy, position.z), 1.);
+    gl_Position = modelViewProjection * vec4(
+      position + vec3(vec2(point.x, point.y) * charSize.xy, position.z), 1.);
     vPoint = texturePosition.xy + point * texturePosition.zw;
-    vColor = color;
-    vColor[3] *= (1. - smoothstep(0.0, 1., cameraDistance / (5000. * charSize.z)));
+    vColor = color.abgr;
+    vColor[3] = smoothstep(0.2, 0.8, cameraDistance / (50. * charSize.z) );
   }`,
 
     fragment: `
@@ -175,7 +164,6 @@ function getTextProgram(gl, options) {
 
   uniform float bias;
   uniform float opacity;
-  uniform float cameraDistance;
   uniform sampler2D msdf;
 
   float median(float r, float g, float b) {
@@ -188,6 +176,9 @@ function getTextProgram(gl, options) {
     float alpha = clamp(sigDist / fwidth(sigDist) + bias, 0.0, 1.0);
     gl_FragColor = vec4(vColor.rgb, vColor.a * alpha * opacity);
   }`,
+    attributes: {
+      color: new ColorAttribute(),
+    },
     instanced: {
       point: new InstancedAttribute([0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1]),
     },

@@ -10,6 +10,7 @@ export const LayerLevels = {
   Edges: 5,
   HighlightedEdges: 7,
   Nodes: 10,
+  Labels: 12,
   Text: 15
 }
 

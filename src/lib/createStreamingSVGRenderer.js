@@ -4,6 +4,7 @@ import {getPointsFromPathData, getElementFillColor} from 'streaming-svg-parser';
 import PointCollection from './PointCollection';
 import PolyLineCollection from './PolyLineCollection';
 import TextCollection from './MSDFTextCollection';
+import ColoredTextCollection from './ColoredTextCollection';
 import bus, {setProgress} from './bus';
 import createFuzzySearcher from './createFuzzySearcher';
 import {debounce, formatNumber} from './utils'
@@ -25,6 +26,8 @@ export default function createStreamingSVGRenderer(canvas) {
   let boundariesFill = new PolyLineCollection(scene.getGL(), {color: 0x124182a4, opacity: 1.0});
 
   let text = new TextCollection(scene.getGL());
+  let labelsText = new ColoredTextCollection(scene.getGL());
+
   let loader;
   let viewBox;
   let currentTransform = createTransformParser();
@@ -42,10 +45,12 @@ export default function createStreamingSVGRenderer(canvas) {
   sceneLayerManager.addToLayer(boundariesFill, LayerLevels.Polygons);
   sceneLayerManager.addToLayer(nodes, LayerLevels.Nodes);
   sceneLayerManager.addToLayer(text, LayerLevels.Text);
+  sceneLayerManager.addToLayer(labelsText, LayerLevels.Labels)
 
   sceneLayerManager.addToNamedGroup(boundariesFill, NamedGroups.MainGraph);
   sceneLayerManager.addToNamedGroup(nodes, NamedGroups.MainGraph);
   sceneLayerManager.addToNamedGroup(text, NamedGroups.MainGraph);
+  sceneLayerManager.addToNamedGroup(labelsText, NamedGroups.MainGraph);
 
   // This is our bread and butter for touch/mouse event handling
   const pointerEvents = createPointerEventsHandler(sceneLayerManager, {
@@ -270,6 +275,27 @@ export default function createStreamingSVGRenderer(canvas) {
   function handleElementEnd(element) {
     let transform = element.attributes.get('transform');
     if (transform) currentTransform.popTransform(transform);
+    if (element.tagName === 'text' && element.innerText) {
+      appendTextLabel(element);
+    }
+  }
+
+  function appendTextLabel(el) {
+    let fontSize = getNumericAttribute(el, 'font-size');
+    let alpha = Math.floor(
+      (el.attributes.has('fill-opacity') ? getNumericAttribute(el, 'fill-opacity') : 0.2
+    ) * 0xff);
+    let color = 0x00000000;
+    if (el.attributes.has('fill')) color = hexColor(getElementFillColor(el));
+    color = (color & (0xffffff00)) | alpha;
+    labelsText.addText({
+      x: getNumericAttribute(el, 'x'),
+      y: transformY(getNumericAttribute(el, 'y') - fontSize),
+      color,
+      text: el.innerText,
+      fontSize,
+    })
+
   }
 
   function addNode(el) {
@@ -498,15 +524,11 @@ function createTransformParser() {
 function finiteNumber(x) {
   return Number.isFinite(x);
 }
+
 function getNumericAttribute(el, name) {
   let value = Number.parseFloat(el.attributes.get(name));
   if (!Number.isFinite(value))
-    throw new Error(
-      'Element ' +
-        el.tagName +
-        ' does not have a finite numeric attribute ' +
-        name
-    );
+    throw new Error('Element ' + el.tagName + ' does not have a finite numeric attribute ' + name);
   return value;
 }
 

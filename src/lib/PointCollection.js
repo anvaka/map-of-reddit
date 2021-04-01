@@ -8,6 +8,7 @@ export default class PointCollection extends GLCollection {
       vertex: `
   uniform mat4 modelViewProjection;
   uniform float opacity;
+  uniform float cameraDistance;
 
   attribute float size;
   attribute vec3 position;
@@ -20,7 +21,7 @@ export default class PointCollection extends GLCollection {
   void main() {
     gl_Position = modelViewProjection * vec4(position + vec3(point * size, 0.), 1.0);
     vColor = color.abgr;
-    vColor[3] *= opacity;
+    vColor[3] *= opacity *  (1. - smoothstep(0.0, 1., cameraDistance / (3000. * size)));
     vPoint = point;
   }`,
 
@@ -56,7 +57,7 @@ export default class PointCollection extends GLCollection {
     super(program);
     this.opacity = 1;
   }
-  draw() {
+  draw(gl, drawContext) {
     if (!this.uniforms) {
       this.uniforms = {
         modelViewProjection: this.modelViewProjection,
@@ -64,6 +65,7 @@ export default class PointCollection extends GLCollection {
       };
     }
     this.uniforms.opacity = this.opacity;
+    this.uniforms.cameraDistance = drawContext.view.position[2];
     this.program.draw(this.uniforms);
   }
 
