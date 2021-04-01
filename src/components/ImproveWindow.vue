@@ -7,6 +7,9 @@
     </a>
     <p>The entire website is open source. You can contribute in multiple ways:</p>
     <ul>
+      <li>
+        Discuss this product on our own subreddit: <a href='https://www.reddit.com/r/MofR/' class='accent'>/r/MofR</a>
+      </li>
       <li>Support this work <a href="https://www.patreon.com/anvaka" class='accent'>on Patreon</a> or
       <a href="https://github.com/sponsors/anvaka" class='accent'>GitHub</a>. There is a lot of things
       I'd love to improve about this project, but without your support I wouldn't know if I'm moving
