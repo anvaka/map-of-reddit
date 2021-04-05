@@ -358,7 +358,8 @@ export default function createStreamingSVGRenderer(canvas) {
   function addBorder(el) {
     let { points, color } = parseBorder(el);
     boundariesFill.addPolygon({ polygon: points, color: color });
-    let clusterId = el.attributes.get('id').substr(1);
+    let id = el.attributes.get('id');
+    let clusterId = (id && id.substr(1)) || '';
     clusterColors.set(clusterId, color)
     complimentaryColor.set(clusterId, getComplimentaryColor(color));
     scene.renderFrame();
