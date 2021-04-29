@@ -189,7 +189,14 @@ function getTextProgram(gl, options) {
     gl_FragColor = vec4(vColor.rgb, vColor.a * alpha * opacity);
   }`,
     instanced: {
-      point: new InstancedAttribute([0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1]),
+      point: new InstancedAttribute([
+        0, 0, 
+        1, 0, 
+        1, 1, 
+
+        1, 1, 
+        0, 0, 
+        0, 1]),
     },
   });
 }
