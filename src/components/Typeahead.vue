@@ -6,6 +6,7 @@
   </a>
     <input
       ref='input' autofocus
+      type='text'
       autocomplete='off'
       autocorrect='off'
       autocapitalize='off'
@@ -318,7 +319,7 @@ export default {
   }
 }
 
-input {
+input[type='text'] {
   height: 100%;
   width: 100%;
   padding-left: 10px;
