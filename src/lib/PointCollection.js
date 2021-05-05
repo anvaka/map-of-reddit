@@ -56,8 +56,16 @@ export default class PointCollection extends GLCollection {
 
     super(program);
     this.opacity = 1;
+    this.hidden = false;
+  }
+  hide() {
+    this.hidden = true;
+  }
+  show() {
+    this.hidden = false;
   }
   draw(gl, drawContext) {
+    if (this.hidden) return;
     if (!this.uniforms) {
       this.uniforms = {
         modelViewProjection: this.modelViewProjection,
