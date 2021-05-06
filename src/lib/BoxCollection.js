@@ -41,7 +41,7 @@ export class BoxCollection extends GLCollection {
         vec4 col = vec4(0);
         col += length(smoothstep(0.48, 0.5, abs(vTex - 0.5)));
         col += vColor;
-        col[3] = 1.0;
+        col[3] = 0.7;
         gl_FragColor = col;
       }`,
 
@@ -200,7 +200,7 @@ export class BoxCollection extends GLCollection {
       let ui = {
         point,
         uiId: -1,
-        color: 0x606060ff,
+        color: 0x292C33ff,
         texCoordinate: tex[i]
       };
       ui.uiId = this.add(ui);

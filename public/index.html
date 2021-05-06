@@ -49,9 +49,17 @@
         right: 0;
         top: 0;
         bottom: 0;
+        pointer-events: none;
       }
       canvas:focus {
         outline: none;
+      }
+      #events-input {
+        position: absolute;
+        top:0 ;
+        left: 0;
+        width: 100%;
+        height: 100%;
       }
     </style>
   </head>
@@ -60,6 +68,7 @@
       <strong>We're sorry but this website does not work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <p class='loading-script'>Loading script files...</p>
+    <div id='events-input'></div>
     <canvas id="cnv"></canvas>
     <div id="app"></div>
     <!-- built files will be auto injected -->

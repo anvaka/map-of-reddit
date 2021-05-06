@@ -22,8 +22,8 @@
     "rbush-knn": "^3.0.1",
     "streaming-svg-parser": "^1.0.2",
     "vue": "^2.6.11",
-    "vuereddit": "^0.8.0",
-    "w-gl": "^0.16.0"
+    "vuereddit": "^0.10.0",
+    "w-gl": "^0.18.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.1.0",

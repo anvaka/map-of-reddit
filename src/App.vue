@@ -14,15 +14,21 @@
       <div class='progress' v-if='progressMessage'>{{progressMessage}}</div>
     </transition>
     <transition name='fade'>
-      <div class='progress subgraph' v-if='subgraphName'>
+      <div class='progress subgraph' v-if='subgraphName && !isStreetViewMode'>
         Only <a href='#' class='accent' @click.prevent='onSubgraphRootClick'>/r/{{subgraphName}}</a> related subreddits are shown.
         <a href='#' class='accent' @click.prevent='onExitSubgraph'>view all</a>
       </div>
     </transition>
-    <subreddit v-if="subreddit" :name="subreddit" class="preview" @declineAge='onDeclineAge'>
+    <transition name='fade'>
+      <div class='progress subgraph' v-if='isStreetViewMode && !isStreetViewInProgress'>
+        <a href='#' class='accent' @click.prevent='onExitStreetView'>exit street view</a>
+      </div>
+    </transition>
+    <subreddit v-if="subreddit" :name="subreddit" :sort="defaultSort" :time="defaultTime" class="preview" @declineAge='onDeclineAge'>
       <template slot='after-title'>
         <div>
           <a href='#' class='subreddit-action' @click.prevent='showRelated' v-if='graphLoaded'>Show related</a>
+          <a href='#' class='subreddit-action' @click.prevent='showStreetView' v-if='streetViewEnabled && graphLoaded && !isSubgraphLayoutInProgress'>Street view</a>
           <span v-if='!graphLoaded' class='subreddit-action'>the map is still loading...</span>
         </div>
       </template>
@@ -39,6 +45,7 @@
         :query="appState.query"
       ></typeahead>
     </form>
+    <keymap v-if='isStreetViewMode' :scene='scene'></keymap>
     <a href='#' @click.prevent='onImproveClick' class='accent improve'>Improve this map</a>
     <transition name='slide-bottom'>
       <small-preview v-if="smallPreview" :name="smallPreview" class="small-preview"></small-preview>
@@ -71,6 +78,7 @@
 <script>
 import "vuereddit/dist/vuereddit.css";
 
+import Vue from 'vue';
 import createStreamingSVGRenderer from './lib/createStreamingSVGRenderer';
 import Tooltip from "./Tooltip";
 import Typeahead from "./components/Typeahead";
@@ -83,6 +91,10 @@ import createFirstInteractionListener from './lib/createFirstInteractionListener
 import {isWebGLEnabled} from 'w-gl';
 
 import bus from "./lib/bus";
+import Keymap from './Keymap.vue';
+
+let Instance = Vue.extend(Subreddit);
+let nameToInstance = new Map();
 
 export default {
   components: {
@@ -91,17 +103,31 @@ export default {
     Subreddit,
     Sidebar,
     ImproveWindow,
-    SmallPreview
+    SmallPreview,
+    Keymap
   },
   name: "app",
   methods: {
     showRelated() {
       this.scene.showRelated(this.subreddit);
+      this.isSubgraphLayoutInProgress = true;
       if (isSmallScreen()) {
         // move panel to the bottom
         this.smallPreview = this.subreddit;
         this.subreddit = null;
       }
+    },
+    showStreetView() {
+      this.scene.showStreetView(this.subreddit);
+      this.subreddit = null;
+      this.tooltip = null;
+      this.isStreetViewMode = true;
+      this.isStreetViewInProgress = true;
+    },
+    onExitStreetView() {
+      this.isStreetViewInProgress = false;
+      this.scene.exitStreetView();
+      this.isStreetViewMode = false;
     },
     findSubreddit(q) {
       appState.query = q;
@@ -156,13 +182,16 @@ export default {
     onExitSubgraph() {
       bus.fire('exit-subgraph');
       this.subgraphName = null;
+      this.isSubgraphLayoutInProgress = false;
     },
     showSubreddit(subreddit, forceFullView) {
-      if (isSmallScreen() && !forceFullView) {
-        this.smallPreview = subreddit;
-      } else {
-        this.smallPreview = null;
-        this.subreddit = subreddit;
+      if (!this.scene.isStreetViewMode()) {
+        if (isSmallScreen() && !forceFullView) {
+          this.smallPreview = subreddit;
+        } else {
+          this.smallPreview = null;
+          this.subreddit = subreddit;
+        }
       }
       appState.query = subreddit;
       this.tooltip = null;
@@ -182,29 +211,70 @@ export default {
       } else if (progress && progress.subgraphDone) {
         this.progressMessage = null;
         this.subgraphName = progress.subgraphName;
+        this.isSubgraphLayoutInProgress = false;
+      }  else if (progress && progress.streetViewDone) {
+        this.progressMessage = null;
+        this.isStreetViewInProgress = false;
       } else if (progress) {
         this.progressMessage = progress.message;
         this.subgraphVisualized = null;
       } 
+    },
+    appendDom(e) {
+      // TODO: Consider window.requestIdleCallback?
+      let oldInstance = nameToInstance.get(e.name);
+      if (oldInstance) {
+        oldInstance.$destroy();
+      }
+      let div = document.createElement('div');
+      let viewer = new Instance({propsData: { 
+        name: e.name,
+        showFirst: 5,
+        sort: this.defaultSort || 'hot',
+        time: this.defaultTime || 'day'
+      }});
+      viewer.$on('sortChanged', (newSort) => this.defaultSort = newSort);
+      viewer.$on('timeChanged', (newTime) => {
+        this.defaultTime = newTime;
+        debugger;
+      });
+      e.dom.appendChild(div);
+      let instance = viewer.$mount(div);
+      nameToInstance.set(e.name, instance)
+    },
+    removeDom(e) {
+      let oldInstance = nameToInstance.get(e.name);
+      if (oldInstance) {
+        oldInstance.$destroy();
+        nameToInstance.delete(e.name);
+      }
     }
   },
   data() {
     return {
       improveVisible: false,
       isWebGLEnabled: false,
+      isStreetViewMode: false,
+      isSubgraphLayoutInProgress: false,
+      isStreetViewInProgress: false,
       typeaheadChanged: false,
       tooltip: null,
       subgraphName: null,
       subreddit: null,
+      scene: null,
       smallPreview: null,
       sidebarVisible: false,
       progressMessage: '',
       graphLoaded: false,
+      streetViewEnabled: appState.getQueryState().get('sv') === true,
+      defaultSort: 'hot',
+      defaultTime: 'day',
       appState,
     };
   },
   mounted() {
     const canvas = document.getElementById("cnv");
+    nameToInstance = new Map();
     this.isWebGLEnabled = isWebGLEnabled(canvas);
     if (!this.isWebGLEnabled) return;
 
@@ -216,6 +286,8 @@ export default {
     bus.on('show-tooltip', this.showTooltip);
     bus.on('show-subreddit', this.showSubreddit);
     bus.on('progress', this.setProgress);
+    bus.on('append-dom', this.appendDom);
+    bus.on('remove-dom', this.removeDom);
   },
 
   beforeDestroy() {
@@ -228,6 +300,8 @@ export default {
     bus.off('show-tooltip', this.showTooltip);
     bus.off('show-subreddit', this.showSubreddit);
     bus.off('progress', this.setProgress);
+    bus.off('append-dom', this.appendDom);
+    bus.off('remove-dom', this.removeDom);
   }
 };
 
@@ -240,7 +314,8 @@ function isSmallScreen() {
 @import './vars.styl';
 
 #app {
-  position: relative;
+  position: absolute;
+  top: 0;
   background: background-color;
 }
 .no-webgl {

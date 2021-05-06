@@ -38,6 +38,12 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
 
   return {
     dispose,
+    getPointerEvents() {
+      return pointerEvents
+    },
+    getNameToUI() {
+      return ourNodeNameToUI
+    },
     run
   };
 

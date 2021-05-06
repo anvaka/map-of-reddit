@@ -9,7 +9,7 @@ import PointCollection from './PointCollection';
 import {LayerLevels} from './constants';
 
 export default function createPointerEventsHandler(sceneLayerManager, options) {
-  const spatialIdex = new RBush();
+  const spatialIndex = new RBush();
   let moved = false;
   let isPaused = false;
   const scene = sceneLayerManager.getScene();
@@ -37,18 +37,14 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
     clearHighlights,
     focusUI,
     dispose,
-    setPaused
+    setPaused,
+    getIndex() {
+      return spatialIndex;
+    }
   }
 
-  function handleTransform(dc) {
-    // TODO:
-    // if (cameraZPosition < 80) {
-    //   // force camera to not go closer:
-    //   scene.view.position[2] = 80;
-    //   scene.getCamera().setViewBox();
-    // }
-
-    let cameraZPosition = dc.view.position[2];
+  function handleTransform(e) {
+    let cameraZPosition = e.drawContext.view.position[2];
     let z = Math.min(cameraZPosition, 8000);
     firstLevelArrows.width = Math.max(1, 60 * z / 8000);
     secondLevelArrows.width = Math.max(1, 20 * z / 8000);
@@ -92,7 +88,7 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
     let position = ui.position;
     let r = ui.size / 2;
 
-    spatialIdex.insert({
+    spatialIndex.insert({
       minX: position[0] - r,
       minY: position[1] - r,
       maxX: position[0] + r,
@@ -137,7 +133,7 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
   }
 
   function findNearest(x, y) {
-    const neighborIds = knn(spatialIdex, x, y, 1);
+    const neighborIds = knn(spatialIndex, x, y, 1);
     let neighbor = neighborIds[0];
     if (neighbor === undefined) return;
     let ui = neighbor.ui;

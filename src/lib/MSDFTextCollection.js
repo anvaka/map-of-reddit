@@ -56,7 +56,7 @@ export default class MSDFTextCollection extends GLCollection {
     this.uniforms.cameraDistance = drawContext.view.position[2];
     this.uniforms.opacity = this.opacity;
 
-    // This draws text outline
+    // This draws text outline. TODO: Can I get rid of this call?
     this.uniforms.color[0] = 0.2;
     this.uniforms.color[1] = 0.4;
     this.uniforms.color[2] = 0.8;

@@ -14,9 +14,14 @@ import createSubgraphVisualizer from './createSubgraphVisualizer';
 import createPointerEventsHandler from './createPointerEventsHandler';
 import createSceneLayerManager from './createSceneLayerManager';
 import {Colors, LayerLevels, NamedGroups} from './constants';
+import createStreetView from './createStreetView';
 
 export default function createStreamingSVGRenderer(canvas) {
   let ignoreSVGViewBox = false;
+  let isStreetView = false;
+  let preStreetViewCameraPosition;
+  let inputTarget;
+  let streetView;
   let scene = initScene();
   let fuzzySearcher = createFuzzySearcher();
   window.fuzzySearcher = fuzzySearcher; // TODO: Don't use window.
@@ -75,8 +80,13 @@ export default function createStreamingSVGRenderer(canvas) {
     focus() {
       canvas.focus();
     },
+    isStreetViewMode() {
+      return isStreetView
+    },
     dispose,
     showRelated,
+    showStreetView,
+    exitStreetView,
     getScene() {
       return scene;
     },
@@ -127,6 +137,61 @@ export default function createStreamingSVGRenderer(canvas) {
     });
 
     return linkUIs;
+  }
+
+  function showStreetView(subreddit) {
+    // sceneLayerManager.hideNamedGroup(NamedGroups.MainGraph);
+    // let graph = loader.getGraph();
+    // let node = graph.getNode(subreddit);
+    isStreetView = true;
+    let currentPointerEvents = subgraphVisualizer ? subgraphVisualizer.getPointerEvents() : pointerEvents;
+    if (!streetView) {
+      let nameToUI = subgraphVisualizer ? subgraphVisualizer.getNameToUI() : nodeNameToUI;
+      streetView = createStreetView(
+        scene, 
+        currentPointerEvents.getIndex(), 
+        nameToUI, 
+        subreddit)
+    }
+    nodes.hide();
+    currentPointerEvents.setPaused(true); // let the subgraph to handle the events
+    preStreetViewCameraPosition = scene.getDrawContext().view.position[2];
+    streetView.enter();
+  }
+
+  function exitStreetView() {
+    nodes.show();
+    streetView.exit();
+    streetView.dispose();
+    streetView = null;
+
+    scene.getDrawContext().view.position[2] = preStreetViewCameraPosition;
+    scene.getCameraController().setViewBox();
+    let currentPointerEvents = subgraphVisualizer ? subgraphVisualizer.getPointerEvents() : pointerEvents;
+    currentPointerEvents.setPaused(false);
+    isStreetView = false;
+    if (inputTarget) inputTarget.focus();
+  }
+
+  function lookAtNode(subreddit) {
+    if (isStreetView) {
+      streetView.lookAt(subreddit);
+    } else {
+      let node = nodeNameToUI.get(subreddit);
+      if (!node) return;
+
+      let [x, y] = node.position;
+      let size = node.size || 10;
+      size *= 2;
+      scene.setViewBox({
+        left: x - size,
+        top: y - size,
+        right: x + size,
+        bottom: y + size,
+      });
+
+      return node;
+    }
   }
 
   function showRelated(subreddit) {
@@ -189,17 +254,8 @@ export default function createStreamingSVGRenderer(canvas) {
 
   function focusNode(nodeName) {
     // this means they entered something in the search box
-    let ui = nodeNameToUI.get(nodeName);
+    let ui = lookAtNode(nodeName);
     if (!ui) return;
-
-    let [cx, cy] = ui.position;
-    let size = (ui.size || 10) * 2;
-    scene.setViewBox({
-      left: cx - size,
-      top: cy - size,
-      right: cx + size,
-      bottom: cy + size,
-    });
 
     if (subgraphVisualizer) {
       subgraphVisualizer.dispose(() => {
@@ -210,6 +266,7 @@ export default function createStreamingSVGRenderer(canvas) {
 
     pointerEvents.focusUI(ui);
     scene.renderFrame();
+    if (inputTarget) inputTarget.focus();
   }
 
   function unfocus() {
@@ -225,6 +282,7 @@ export default function createStreamingSVGRenderer(canvas) {
         pointerEvents.setPaused(false); // take care of the events now
       });
       subgraphVisualizer = null;
+      if (inputTarget) inputTarget.focus();
     }
   }
 
@@ -428,13 +486,16 @@ function hslToRgb(h, s, l) {
 }
 
   function initScene() {
+    inputTarget = document.querySelector('#events-input');
     let scene = createScene(canvas, { 
       allowPinchRotation: false,
+      inputTarget,
+      near: 10,
       maxZoom: 1500000,
       minZoom: 50
     });
 
-    scene.setClearColor(0x0f / 255, 0x0f / 255, 0x0f / 255, 1);
+    scene.setClearColor(0x0f / 255, 0x0f / 255, 0x0f / 255, 0);
 
     let cameraPosition = appState.getCameraPosition();
     if (cameraPosition) {
@@ -443,7 +504,7 @@ function hslToRgb(h, s, l) {
       position[0] = cameraPosition[0];
       position[1] = cameraPosition[1];
       position[2] = cameraPosition[2];
-      scene.getCamera().setViewBox();
+      scene.getCameraController().setViewBox();
       ignoreSVGViewBox = true;
     } else {
       let initialSceneSize = 500;
