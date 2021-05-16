@@ -45,7 +45,6 @@
         :query="appState.query"
       ></typeahead>
     </form>
-    <keymap v-if='isStreetViewMode' :scene='scene'></keymap>
     <a href='#' @click.prevent='onImproveClick' class='accent improve'>Improve this map</a>
     <transition name='slide-bottom'>
       <small-preview v-if="smallPreview" :name="smallPreview" class="small-preview"></small-preview>
@@ -91,7 +90,6 @@ import createFirstInteractionListener from './lib/createFirstInteractionListener
 import {isWebGLEnabled} from 'w-gl';
 
 import bus from "./lib/bus";
-import Keymap from './Keymap.vue';
 
 let Instance = Vue.extend(Subreddit);
 let nameToInstance = new Map();
@@ -104,7 +102,6 @@ export default {
     Sidebar,
     ImproveWindow,
     SmallPreview,
-    Keymap
   },
   name: "app",
   methods: {
@@ -236,7 +233,6 @@ export default {
       viewer.$on('sortChanged', (newSort) => this.defaultSort = newSort);
       viewer.$on('timeChanged', (newTime) => {
         this.defaultTime = newTime;
-        debugger;
       });
       e.dom.appendChild(div);
       let instance = viewer.$mount(div);

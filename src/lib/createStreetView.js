@@ -1,4 +1,4 @@
-import { createGameCamera, createSpaceMapCamera, DomElement, DomContainer } from 'w-gl';
+import { fpsControls, mapControls, createFPSControlsUI, DomElement, DomContainer } from 'w-gl';
 import { BoxCollection } from './BoxCollection';
 import {quat, mat4, vec3} from 'gl-matrix';
 import knn from 'rbush-knn';
@@ -12,6 +12,7 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
     dispose,
     lookAt
   };
+  let fpsUI;
   let boxes, items, asyncRender;
   let visibleBoxes = new Set();
   let visibilityUpdate = 0;
@@ -45,12 +46,11 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
   }
 
   function enter() {
-    scene.setCameraController(createGameCamera);
-
+    let cameraController = scene.setCameraController(fpsControls);
     lookAt(subreddit);
 
-    let cameraController = scene.getCameraController();
-    cameraController.setMoveSpeed(10).setFlySpeed(2).setMouseCapture(true);
+    cameraController.setMoveSpeed(10).setScrollSpeed(100).setFlySpeed(2).enableMouseCapture(true);
+    fpsUI = createFPSControlsUI(document.body, cameraController);
 
     items = spatialIndex.all();
     boxes = new BoxCollection(scene.getGL(), {
@@ -128,8 +128,9 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
   function exit() {
     visibleElements.forEach((el, name) => hideElement(name));
 
+    fpsUI.dispose();
     scene.off('transform', handleTransform);
-    scene.setCameraController(createSpaceMapCamera);
+    scene.setCameraController(mapControls);
     scene.removeChild(boxes);
   }
 
@@ -194,7 +195,8 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
       dc.view.position[2] = 10;
       e.updated = true;
     }
-    scene.getCameraController().setMoveSpeed(1+smoothStep(0, 3000, z) * 14);
+    let moveSpeed = 3+smoothStep(0, 3000, z) * 14;
+    scene.getCameraController().setMoveSpeed(moveSpeed);
     scheduleVisibilityUpdate();
   }
 

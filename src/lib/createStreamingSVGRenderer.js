@@ -151,7 +151,7 @@ export default function createStreamingSVGRenderer(canvas) {
         scene, 
         currentPointerEvents.getIndex(), 
         nameToUI, 
-        subreddit)
+        subreddit);
     }
     nodes.hide();
     currentPointerEvents.setPaused(true); // let the subgraph to handle the events
