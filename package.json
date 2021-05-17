@@ -10,6 +10,7 @@
     "data": "cd data && http-server -p 8085 -c-1 --cors ."
   },
   "dependencies": {
+    "concaveman": "^1.2.0",
     "core-js": "^3.4.3",
     "earcut": "^2.2.2",
     "fuzzysort": "^1.1.4",

@@ -1,10 +1,14 @@
 import PointCollection from './PointCollection';
 import TextCollection from './MSDFTextCollection';
+import PolyLineCollection from './PolyLineCollection';
 import {Colors, LayerLevels, NamedGroups} from './constants';
 import createPointerEventsHandler from './createPointerEventsHandler';
 import bus, {setProgress} from './bus';
+import getComplimentaryColor from './getComplimentaryColor';
 
 const createLayout = require('ngraph.forcelayout');
+const FLOOR_COLOR = 0x5670B6ff;
+const EDGE_COLOR = getComplimentaryColor(0x5670B6ff);
 
 const Easing = {
   easeInQuart(x) {
@@ -22,9 +26,11 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
   const scene = sceneLayerManager.getScene();
   const points = new PointCollection(scene.getGL());
   const text = new TextCollection(scene.getGL());
+  const boundariesFill = new PolyLineCollection(scene.getGL(), {color: 0x124182a4, opacity: 1.0});
   const transitionAnimator = createTransitionAnimator(sceneLayerManager, 60 * 0.2, viewBox);
 
   // order is important. Pointer events should go after main elements
+  sceneLayerManager.addToLayer(boundariesFill, LayerLevels.Polygons);
   sceneLayerManager.addToLayer(points, LayerLevels.Nodes);
   sceneLayerManager.addToLayer(text, LayerLevels.Text);
 
@@ -73,7 +79,7 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
       linkUIs.push({
         from: ourNodeNameToUI.get(link.fromId).position,
         to: ourNodeNameToUI.get(link.toId).position,
-        color: isFirstLevel ? 0xffffffff : Colors.TERNARY_LINK, 
+        color: isFirstLevel ? 0xffffffff : EDGE_COLOR, 
         isFirstLevel
       });
     });
@@ -91,6 +97,7 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
     pointerEvents.dispose();
 
     transitionAnimator.startSceneRestoration(() => {
+      boundariesFill.parent.removeChild(boundariesFill);
       points.parent.removeChild(points);
       points.dispose();
       if (onSceneIsBack) onSceneIsBack();
@@ -159,8 +166,10 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
   }
 
   function finishRendering() {
+    let points = [];
     subgraph.forEachNode(node => {
       let {x, y} = layout.getNodePosition(node.id);
+      points.push([x, y]);
       let ui = ourNodeNameToUI.get(node.id);
       pointerEvents.addNode(ui);
       text.addText({
@@ -177,8 +186,12 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
     setProgress(() => ({
       subgraphDone: true,
       subgraphName: rootNode
-    }))
-    // transitionAnimator.startZoomIn(boundingRect);
+    }));
+    import('concaveman').then(concaveman => {
+      var polygon = concaveman.default(points);
+      boundariesFill.addPolygon({polygon, color: FLOOR_COLOR})
+      scene.renderFrame();
+    })
   }
 
   function getBoundingRect() {
