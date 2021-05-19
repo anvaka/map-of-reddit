@@ -431,7 +431,8 @@ export default function createStreamingSVGRenderer(canvas) {
       inputTarget,
       near: 10,
       maxZoom: 1500000,
-      minZoom: 50
+      minZoom: 50,
+      useDeviceOrientation: false
     });
 
     scene.setClearColor(0x0f / 255, 0x0f / 255, 0x0f / 255, 0);

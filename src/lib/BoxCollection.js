@@ -225,17 +225,6 @@ export class BoxCollection extends GLCollection {
     })
   }
 
-
-  // draw(gl, drawContext: DrawContext) {
-  //   if (!this.uniforms) {
-  //     this.uniforms = {
-  //       modelViewProjection: this.modelViewProjection,
-  //     }
-  //   }
-
-  //   this.program.draw(this.uniforms);
-  // }
-
   clear() {
     throw new Error('Not implemented');
   }
