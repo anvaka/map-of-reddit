@@ -262,7 +262,7 @@ export default {
       sidebarVisible: false,
       progressMessage: '',
       graphLoaded: false,
-      streetViewEnabled: appState.getQueryState().get('sv') === true,
+      streetViewEnabled: appState.getQueryState().get('sv') !== false,
       defaultSort: 'hot',
       defaultTime: 'day',
       appState,
