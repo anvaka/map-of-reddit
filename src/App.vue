@@ -29,6 +29,10 @@
         <div>
           <a href='#' class='subreddit-action' @click.prevent='showRelated' v-if='graphLoaded'>Show related</a>
           <a href='#' class='subreddit-action' @click.prevent='showStreetView' v-if='streetViewEnabled && graphLoaded && !isSubgraphLayoutInProgress'>Street view</a>
+          <div v-if='graphLoaded'>
+            <input type="checkbox" id="checkbox" v-model="multiView">
+            <label for="checkbox">Multireddit view from neighbors</label>
+          </div>
           <span v-if='!graphLoaded' class='subreddit-action'>the map is still loading...</span>
         </div>
       </template>
@@ -104,6 +108,21 @@ export default {
     SmallPreview,
   },
   name: "app",
+  watch: {
+    multiView(newValue) {
+      let from = getFirstSubreddit(this.subreddit);
+      let newQuery;
+
+      if (newValue) {
+        let all = this.scene.getNeighbors(from);
+        all.unshift(from);
+        newQuery = all.join(' + ');
+      } else {
+        newQuery = from;
+      }
+      this.showSubreddit(newQuery)
+    }
+  },
   methods: {
     showRelated() {
       this.scene.showRelated(this.subreddit);
@@ -169,8 +188,16 @@ export default {
       }
     },
     onSubmit() {
-      bus.fire('focus-node', appState.query);
-      appState.saveQuery(appState.query);
+      let originalQuery = appState.query;
+      bus.fire('focus-node', getFirstSubreddit(originalQuery));
+      if (originalQuery !== appState.query) {
+        // This is due to 'show-subreddit' event floating from 'focus-node'
+        // in the scene renderer. Insist that we keep the original input:
+        appState.saveQuery(originalQuery);
+        if (originalQuery && originalQuery.indexOf('+') > -1) {
+          this.subreddit = originalQuery;
+        }
+      }
       this.subgraphName = null;
     },
     onSubgraphRootClick() {
@@ -182,6 +209,9 @@ export default {
       this.isSubgraphLayoutInProgress = false;
     },
     showSubreddit(subreddit, forceFullView) {
+      if (subreddit !== this.subreddit) {
+        this.multiView = subreddit.indexOf('+') > -1;
+      }
       if (!this.scene.isStreetViewMode()) {
         if (isSmallScreen() && !forceFullView) {
           this.smallPreview = subreddit;
@@ -262,6 +292,7 @@ export default {
       sidebarVisible: false,
       progressMessage: '',
       graphLoaded: false,
+      multiView: false,
       streetViewEnabled: appState.getQueryState().get('sv') !== false,
       defaultSort: 'hot',
       defaultTime: 'day',
@@ -303,6 +334,10 @@ export default {
 
 function isSmallScreen() {
   return window.innerWidth < 550;
+}
+
+function getFirstSubreddit(potentiallyMultiViewName) {
+  return potentiallyMultiViewName && potentiallyMultiViewName.split('+').map(x => x.trim())[0]
 }
 </script>
 

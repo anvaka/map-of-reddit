@@ -23,7 +23,7 @@
     "rbush-knn": "^3.0.1",
     "streaming-svg-parser": "^1.0.2",
     "vue": "^2.6.11",
-    "vuereddit": "^0.10.0",
+    "vuereddit": "^0.11.0",
     "w-gl": "^0.19.0"
   },
   "devDependencies": {

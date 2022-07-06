@@ -88,6 +88,7 @@ export default function createStreamingSVGRenderer(canvas) {
     showRelated,
     showStreetView,
     exitStreetView,
+    getNeighbors,
     getScene() {
       return scene;
     },
@@ -141,6 +142,7 @@ export default function createStreamingSVGRenderer(canvas) {
   }
 
   function showStreetView(subreddit) {
+    subreddit = subreddit.split('+').map(x => x.trim())[0];
     // sceneLayerManager.hideNamedGroup(NamedGroups.MainGraph);
     // let graph = loader.getGraph();
     // let node = graph.getNode(subreddit);
@@ -155,7 +157,7 @@ export default function createStreamingSVGRenderer(canvas) {
         subreddit);
     }
     nodes.hide();
-    currentPointerEvents.setPaused(true); // let the subgraph to handle the events
+    currentPointerEvents.setPaused(true); // let the street view to handle the events
     preStreetViewCameraPosition = scene.getDrawContext().view.position[2];
     streetView.enter();
   }
@@ -193,6 +195,17 @@ export default function createStreamingSVGRenderer(canvas) {
 
       return node;
     }
+  }
+
+  function getNeighbors(subreddit) {
+    let graph = loader.getGraph();
+    let neighbors = [];
+
+    graph.forEachLinkedNode(subreddit, otherNode => {
+      neighbors.push(otherNode.id);
+    });
+
+    return neighbors;
   }
 
   function showRelated(subreddit) {
@@ -430,7 +443,7 @@ export default function createStreamingSVGRenderer(canvas) {
       allowPinchRotation: false,
       inputTarget,
       near: 10,
-      maxZoom: 1500000,
+      // maxZoom: 1500000,
       minZoom: 50,
       useDeviceOrientation: false
     });

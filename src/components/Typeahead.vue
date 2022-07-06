@@ -114,7 +114,19 @@ export default {
     },
 
     pickSuggestion(suggestion) {
-      this.currentQuery = suggestion.text;
+      let composedQuery = this.currentQuery;
+      if (composedQuery.indexOf('+') > -1) {
+        let parts = composedQuery.split('+');
+        if (parts.length > 1) {
+          parts.pop();
+          parts.push(suggestion.text);
+          this.currentQuery = parts.map(part => part.trim()).join(' + ');
+        } else {
+          this.currentQuery = suggestion.text;
+        }
+      } else {
+        this.currentQuery = suggestion.text;
+      }
       this.hideSuggestions();
       this.$emit("selected", this.currentQuery);
     },
@@ -148,7 +160,9 @@ export default {
       }
 
       self.previous = window.setTimeout(function() {
-        var p = window.fuzzySearcher.find(self.currentQuery);
+        let parts = self.currentQuery.split('+')
+        let q = parts[parts.length - 1].trim();
+        var p = window.fuzzySearcher.find(q);
 
         if (Array.isArray(p)) {
           self.suggestions = p.map(x => ({
