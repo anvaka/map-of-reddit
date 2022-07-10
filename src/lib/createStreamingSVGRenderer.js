@@ -89,6 +89,7 @@ export default function createStreamingSVGRenderer(canvas) {
     showStreetView,
     exitStreetView,
     getNeighbors,
+    getGraph,
     getScene() {
       return scene;
     },
@@ -195,6 +196,10 @@ export default function createStreamingSVGRenderer(canvas) {
 
       return node;
     }
+  }
+
+  function getGraph() {
+    return loader.getGraph();
   }
 
   function getNeighbors(subreddit) {
@@ -428,9 +433,11 @@ export default function createStreamingSVGRenderer(canvas) {
   }
 
   function addBorder(el) {
+    // let id = el.attributes.get('id');
+    // if (id.indexOf('polygon') === 0) return;
+
     let { points, color } = parseBorder(el);
     boundariesFill.addPolygon({ polygon: points, color: color });
-    let id = el.attributes.get('id');
     let clusterId = (id && id.substr(1)) || '';
     clusterColors.set(clusterId, color)
     complimentaryColor.set(clusterId, getComplimentaryColor(color));

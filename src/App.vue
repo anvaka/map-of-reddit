@@ -306,6 +306,7 @@ export default {
     if (!this.isWebGLEnabled) return;
 
     let svgRenderer = createStreamingSVGRenderer(canvas);
+    window.getGraph = svgRenderer.getGraph;
     let path = appState.getFilePath();
     svgRenderer.loadSVG(path);
     this.scene = svgRenderer;
