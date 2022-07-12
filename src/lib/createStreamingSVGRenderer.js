@@ -433,7 +433,7 @@ export default function createStreamingSVGRenderer(canvas) {
   }
 
   function addBorder(el) {
-    // let id = el.attributes.get('id');
+    let id = el.attributes.get('id');
     // if (id.indexOf('polygon') === 0) return;
 
     let { points, color } = parseBorder(el);
