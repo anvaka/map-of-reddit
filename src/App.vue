@@ -116,7 +116,7 @@ export default {
       if (newValue) {
         let all = this.scene.getNeighbors(from);
         all.unshift(from);
-        newQuery = all.join(' + ');
+        newQuery = all.join('+');
       } else {
         newQuery = from;
       }
@@ -210,7 +210,7 @@ export default {
     },
     showSubreddit(subreddit, forceFullView) {
       if (subreddit !== this.subreddit) {
-        this.multiView = subreddit.indexOf('+') > -1;
+        this.multiView = subreddit && subreddit.indexOf('+') > -1;
       }
       if (!this.scene.isStreetViewMode()) {
         if (isSmallScreen() && !forceFullView) {

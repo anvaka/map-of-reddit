@@ -120,7 +120,7 @@ export default {
         if (parts.length > 1) {
           parts.pop();
           parts.push(suggestion.text);
-          this.currentQuery = parts.map(part => part.trim()).join(' + ');
+          this.currentQuery = parts.map(part => part.trim()).join('+');
         } else {
           this.currentQuery = suggestion.text;
         }
