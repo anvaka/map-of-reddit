@@ -12,6 +12,7 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
   const spatialIndex = new RBush();
   let moved = false;
   let isPaused = false;
+  let maxCameraDistance = 8000;
   const scene = sceneLayerManager.getScene();
 
   scene.on('click', handleClick);
@@ -19,8 +20,9 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
   scene.on('transform', handleTransform);
 
   const highlightedNodes = new PointCollection(scene.getGL());
-  const firstLevelArrows = new LineCollection(scene.getGL(), {width: 60});
-  const secondLevelArrows = new LineCollection(scene.getGL(), {width: 20});
+  let primaryWidth = getPrimaryLineWidth(scene.getDrawContext().view.position[2]);
+  const firstLevelArrows = new LineCollection(scene.getGL(), {width: primaryWidth});
+  const secondLevelArrows = new LineCollection(scene.getGL(), {width: primaryWidth/2});
 
   sceneLayerManager.addToLayer(secondLevelArrows, LayerLevels.Edges);
   sceneLayerManager.addToLayer(firstLevelArrows, LayerLevels.HighlightedEdges);
@@ -40,16 +42,35 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
     setPaused,
     getIndex() {
       return spatialIndex;
-    }
+    },
+    setViewBox
+  }
+
+  function setViewBox(newBox) {
+    maxCameraDistance = Math.max(newBox.width, newBox.height);
   }
 
   function handleTransform(e) {
     let cameraZPosition = e.drawContext.view.position[2];
-    let z = Math.min(cameraZPosition, 8000);
-    firstLevelArrows.width = Math.max(1, 60 * z / 8000);
-    secondLevelArrows.width = Math.max(1, 20 * z / 8000);
+    firstLevelArrows.width = getPrimaryLineWidth(cameraZPosition);
+    secondLevelArrows.width = firstLevelArrows.width / 2;
     moved = true;
     if (options && options.onTransform) options.onTransform();
+  }
+
+  function getPrimaryLineWidth(cameraZPosition) {
+    const k = cameraZPosition / maxCameraDistance;
+    let pixelWidth = 6 - 2 * k;
+    if (k < 0) pixelWidth = 5;
+    if (k > 2) pixelWidth = Math.log(k) / Math.log(2) + 1;
+    return getSceneWidthForPixelWidth(pixelWidth/8)
+  }
+
+  function getSceneWidthForPixelWidth(pixelWidth) {
+    let dc = scene.getDrawContext();
+    let top = scene.getSceneCoordinate(dc.width / 2, dc.height / 2 - pixelWidth / 2);
+    let bottom = scene.getSceneCoordinate(dc.width / 2, dc.height / 2 + pixelWidth / 2);
+    return Math.abs(top[1] - bottom[1]);
   }
 
   function clearHighlights() {

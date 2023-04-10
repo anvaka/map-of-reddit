@@ -228,8 +228,11 @@ export default function createStreamingSVGRenderer(canvas) {
     subgraphNodes.forEach(node => {
       let addedNode = subgraph.getNode(node);
       if (!addedNode || !addedNode.data) {
-        let isFirstChild = graph.hasLink(node, subreddit) || graph.hasLink(subgraph, node);
-        subgraph.addNode(node, {isFirstChild});
+        let isFirstChild = !!(graph.hasLink(node, subreddit) || graph.hasLink(subgraph, node));
+        subgraph.addNode(node, {
+          isFirstChild,
+          size: nodeNameToUI.get(node).size,
+        });
       }
 
       graph.forEachLinkedNode(node, (otherNode, link) => {
@@ -330,6 +333,7 @@ export default function createStreamingSVGRenderer(canvas) {
         width: viewBoxArr[2],
         height: viewBoxArr[3],
       };
+      pointerEvents.setViewBox(viewBox);
 
       if (!ignoreSVGViewBox) {
         scene.setViewBox({
@@ -376,8 +380,8 @@ export default function createStreamingSVGRenderer(canvas) {
   }
 
   function addNode(el) {
-    let x = getNumericAttribute(el, 'cx');
-    let y = transformY(getNumericAttribute(el, 'cy'));
+    let x = getNumericAttribute(el, 'cx', 0);
+    let y = transformY(getNumericAttribute(el, 'cy', 0));
     let r = getNumericAttribute(el, 'r');
     let nodeName = getTextAttribute(el, 'id');
     if (nodeName[0] === '_') nodeName = nodeName.substr(1);
@@ -547,10 +551,12 @@ function finiteNumber(x) {
   return Number.isFinite(x);
 }
 
-function getNumericAttribute(el, name) {
+function getNumericAttribute(el, name, defaultValue) {
   let value = Number.parseFloat(el.attributes.get(name));
-  if (!Number.isFinite(value))
+  if (!Number.isFinite(value)) {
+    if (defaultValue !== undefined) return defaultValue;
     throw new Error('Element ' + el.tagName + ' does not have a finite numeric attribute ' + name);
+  }
   return value;
 }
 

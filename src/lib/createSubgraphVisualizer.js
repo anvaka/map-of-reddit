@@ -19,8 +19,10 @@ const Easing = {
 export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerManager, nodeNameToUI) {
   let layout;
   let raf;
-  let MAX_FRAMES = 400;
+  let MAX_FRAMES = 4000;
   let renderCount = 0;
+  let moveThreshold = 0.1;
+  let prevSize = 0;
 
   const ourNodeNameToUI = new Map();
   const scene = sceneLayerManager.getScene();
@@ -113,29 +115,39 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
   }
 
   function beginLayout() {
+    let minSize = Infinity;
+    let maxSize = -Infinity;
+    subgraph.forEachNode(node => {
+      let ui = nodeNameToUI.get(node.id);
+      if (!ui) throw new Error('Missing ui for node: ' + node.id);
+      if (ui.size < minSize) minSize = ui.size;
+      if (ui.size > maxSize) maxSize = ui.size;
+    });
+    moveThreshold = maxSize * 0.5;
+
     layout = createLayout(subgraph, {
-      timeStep: 80,
-      springLength: 5000,
-      springCoefficient: 1e-5,
-      gravity: -120,
+      timeStep: maxSize / 20,
+      springLength: maxSize * 3,
+      springCoefficient: 1e-4,
+      gravity: -maxSize*100,
       nodeMass(nodeId) {
         let ui = nodeNameToUI.get(nodeId);
-        return ui.size * Math.sqrt(ui.size);
+        return ui.size;
       }
     });
 
     rememberAndSetOriginalPositions();
-    // transitionAnimator.startZoomIn(getBoundingRect(), () => {
-    // });
     raf = requestAnimationFrame(frame);
   }
 
   function frame() {
     for (let i = 0; i < 10; ++i) layout.step();
 
-    updateNodePositions();
+    let bboxSize = updateNodePositions();
+    let movedLength = Math.abs(prevSize - bboxSize);
+    prevSize = bboxSize;
 
-    if (renderCount++ < MAX_FRAMES) {
+    if (movedLength > moveThreshold && renderCount++ < MAX_FRAMES) {
       raf = requestAnimationFrame(frame);
       if (renderCount % 10 === 0) {
         setProgress(() => ({
@@ -212,16 +224,31 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
   }
 
   function updateNodePositions() {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
     subgraph.forEachNode(node => {
       let pos = layout.getNodePosition(node.id);
       let ui = ourNodeNameToUI.get(node.id);
+
       ui.position[0] = pos.x;
       ui.position[1] = pos.y;
+      if (pos.x < minX) minX = pos.x;
+      if (pos.x > maxX) maxX = pos.x;
+      if (pos.y < minY) minY = pos.y;
+      if (pos.y > maxY) maxY = pos.y;
       points.update(ui.id, ui);
     });
+    let w = maxX - minX;
+    let h = maxY - minY;
+    return w * h;
   }
 
   function rememberAndSetOriginalPositions() {
+    let minSize = Infinity;
+    let maxSize = -Infinity;
     subgraph.forEachNode(node => {
       let ui = nodeNameToUI.get(node.id);
       if (!ui) throw new Error('Missing ui for node: ' + node.id);
@@ -238,6 +265,8 @@ export default function createSubgraphVisualizer(subgraph, viewBox, sceneLayerMa
         id: ourNodeNameToUI.size,
         name: ui.name,
       };
+      if (ourUI.size < minSize) minSize = ourUI.size;
+      if (ourUI.size > maxSize) maxSize = ourUI.size;
       ourNodeNameToUI.set(ui.name, ourUI);
       points.add(ourUI);
       layout.setNodePosition(node.id, pos[0], pos[1])
