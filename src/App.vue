@@ -49,6 +49,11 @@
         :query="appState.query"
       ></typeahead>
     </form>
+
+    <div class="support" v-if="graphLoaded && progressMessage === null">
+      Enjoying this map? <br>
+      <a href='https://patreon.com/anvaka' target="_blank"  class='accent'>Support the author</a>
+    </div>
     <a href='#' @click.prevent='onImproveClick' class='accent improve'>Improve this map</a>
     <transition name='slide-bottom'>
       <small-preview v-if="smallPreview" :name="smallPreview" class="small-preview"></small-preview>
@@ -400,6 +405,15 @@ function getFirstSubreddit(potentiallyMultiViewName) {
     justify-content: flex-end;
   }
 }
+.support {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0 8px;
+  font-size: 12px;
+  right: 8px;
+  top: 8px;
+  color: white;
+}
 .improve {
   position: fixed;
   background: rgba(0, 0, 0, 0.3);
@@ -689,6 +703,12 @@ a.accent {
     left: 0;
     margin-top: 0;
     width: 100%;
+  }
+  .support {
+    bottom: 8px;
+    left: 8px;
+    right: unset;
+    top: unset;
   }
   .improve-window {
     width: 100%;
