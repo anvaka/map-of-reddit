@@ -155,7 +155,9 @@ export default function createStreamingSVGRenderer(canvas) {
         scene, 
         currentPointerEvents.getIndex(), 
         nameToUI, 
-        subreddit);
+        subreddit,
+        viewBox
+      );
     }
     nodes.hide();
     currentPointerEvents.setPaused(true); // let the street view to handle the events

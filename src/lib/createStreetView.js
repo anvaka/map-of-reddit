@@ -5,7 +5,7 @@ import knn from 'rbush-knn';
 import bus, { setProgress } from './bus';
 import { formatNumber } from './utils';
 
-export default function createStreetView(scene, spatialIndex, nameToUI, subreddit) {
+export default function createStreetView(scene, spatialIndex, nameToUI, subreddit, viewBox) {
   let api = {
     enter, 
     exit, 
@@ -49,7 +49,11 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
     let cameraController = scene.setCameraController(fpsControls);
     lookAt(subreddit);
 
-    cameraController.setMoveSpeed(10).setScrollSpeed(100).setFlySpeed(2).enableMouseCapture(true);
+    let minDimension = Math.min(viewBox.width, viewBox.height);
+    let moveSpeed = minDimension / 51000;
+    if (!Number.isFinite(moveSpeed)) moveSpeed = 0.1;
+
+    cameraController.setMoveSpeed(moveSpeed).setScrollSpeed(moveSpeed * 10).setFlySpeed(moveSpeed / 5).enableMouseCapture(true);
     fpsUI = createFPSControlsUI(document.body, cameraController);
 
     items = spatialIndex.all();
@@ -195,8 +199,8 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
       dc.view.position[2] = 10;
       e.updated = true;
     }
-    let moveSpeed = 3+smoothStep(0, 3000, z) * 14;
-    scene.getCameraController().setMoveSpeed(moveSpeed);
+    // let moveSpeed = 3+smoothStep(0, 3000, z) * 14;
+    // scene.getCameraController().setMoveSpeed(moveSpeed);
     scheduleVisibilityUpdate();
   }
 
