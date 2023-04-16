@@ -337,11 +337,6 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
   }
 }
 
-function smoothStep(min, max, value) {
-  var x = Math.max(0, Math.min(1, (value-min)/(max-min)));
-  return x*x*(3 - 2*x);
-}
-
 function normalize(out, a) {
   let x = a[0];
   let y = a[1];
