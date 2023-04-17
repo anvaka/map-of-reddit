@@ -51,6 +51,7 @@ export default function createPointerEventsHandler(sceneLayerManager, options) {
   }
 
   function handleTransform(e) {
+    if (isPaused) return;
     let cameraZPosition = e.drawContext.view.position[2];
     firstLevelArrows.width = getPrimaryLineWidth(cameraZPosition);
     secondLevelArrows.width = firstLevelArrows.width / 2;

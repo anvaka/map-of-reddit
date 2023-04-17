@@ -50,7 +50,7 @@
       ></typeahead>
     </form>
 
-    <div class="support" v-if="graphLoaded && progressMessage === null">
+    <div class="support" :class="{subgraph: subgraphName && !isStreetViewMode, street: isStreetViewMode}" v-if="graphLoaded && progressMessage === null">
       Enjoying this map? <br>
       <a href='https://patreon.com/anvaka' target="_blank"  class='accent'>Support the author</a>
     </div>
@@ -683,6 +683,9 @@ a.accent {
     left: inherit;
     transform: inherit;
   }
+  .support.subgraph {
+    top: 80px;
+  }
 }
 @media (max-width: 810px) {
   .progress.subgraph {
@@ -710,6 +713,10 @@ a.accent {
     right: unset;
     top: unset;
   }
+  .support.subgraph {
+    top: unset;
+  }
+
   .improve-window {
     width: 100%;
     height: 100%;
@@ -726,6 +733,9 @@ a.accent {
     position: absolute;
     transform: initial;
     box-shadow: initial;
+  }
+  .support.street {
+    display: none;
   }
 }
 </style>

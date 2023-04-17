@@ -50,7 +50,7 @@ export default function createStreetView(scene, spatialIndex, nameToUI, subreddi
     lookAt(subreddit);
 
     let minDimension = Math.min(viewBox.width, viewBox.height);
-    let moveSpeed = minDimension / 51000;
+    let moveSpeed = minDimension / 100000;
     if (!Number.isFinite(moveSpeed)) moveSpeed = 0.1;
 
     cameraController.setMoveSpeed(moveSpeed).setScrollSpeed(moveSpeed * 10).setFlySpeed(moveSpeed / 5).enableMouseCapture(true);
