@@ -7,7 +7,7 @@ let versionToLink = {
   // 3: 'http://127.0.0.1:8080/graph.svg',
 };
 
-let lastVersion = 1;
+let lastVersion = 2;
 let latestGraphLink = versionToLink[lastVersion];
 // we should ignore camera position if user doesn't have graph version in the link
 // it means they have stored previous link, and we have changed the graph, so their
