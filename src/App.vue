@@ -52,7 +52,7 @@
 
     <div class="support" :class="{subgraph: subgraphName && !isStreetViewMode, street: isStreetViewMode}" v-if="graphLoaded && progressMessage === null">
       Enjoying this map? <br>
-      <a href='https://patreon.com/anvaka' target="_blank"  class='accent'>Support the author</a>
+      <a href='https://www.paypal.com/paypalme/anvakos/5' target="_blank"  class='accent'>Support the author</a>
     </div>
     <a href='#' @click.prevent='onImproveClick' class='accent improve'>Improve this map</a>
     <transition name='slide-bottom'>

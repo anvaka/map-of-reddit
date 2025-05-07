@@ -18,7 +18,7 @@
       </p>
       <p>
         I spent last couple years developing this website as a hobby project. If you enjoy
-        this work please support it <a href="https://www.patreon.com/anvaka" class='accent'>on Patreon</a> or
+        this work please support it <a href="https://www.paypal.com/paypalme/anvakos/5" class="accent">on Paypal</a>, <a href="https://www.patreon.com/anvaka" class='accent'>Patreon</a> or
         <a href="https://github.com/sponsors/anvaka" class='accent'>GitHub</a> and I promise to not disappoint you
         with new features :).
       </p>
