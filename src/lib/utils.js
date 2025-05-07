@@ -11,7 +11,10 @@ export function debounce(cb, ms, self) {
       cb.apply(self, arguments)
     } else {
       lastCall = time;
-      handle = setTimeout(cb, ms, arguments)
+      const args = arguments;
+      handle = setTimeout(function() {
+        cb.apply(self, args);
+      }, ms)
     }
   }
 }
