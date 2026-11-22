@@ -26,6 +26,9 @@
       Please follow me on Twitter  to stay in touch: <a href='https://twitter.com/anvaka' class='accent'>https://twitter.com/anvaka</a>.
       </p>
       <p>
+      See my other projects at <a href='https://anvaka.com' class='accent'>anvaka.com</a>.
+      </p>
+      <p>
         Thank you for your interest and support!
       </p>
     </div>

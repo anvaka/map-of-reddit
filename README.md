@@ -25,6 +25,8 @@ in vain. If you enjoy the work - please consider supporting it on [patreon](http
 or [github](https://github.com/sponsors/anvaka). Please share your suggestions and comments with me
 on [twitter](https://twitter.com/anvaka).
 
+See my other projects at [anvaka.com](https://anvaka.com).
+
 ## Some notes
 
 * There is no single "right" way to cluster reddit. Communities are very rich and they interact with
